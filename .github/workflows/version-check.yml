@@ -25,7 +25,7 @@ jobs:
 
           INIT_VERSION=$(python3 -c "
           import re
-          text = open('usql/__init__.py').read()
+          text = open('usqldb/__init__.py').read()
           m = re.search(r'__version__\s*=\s*\"([^\"]+)\"', text)
           print(m.group(1))
           ")

@@ -1,10 +1,10 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
 
-r"""Backslash command handlers for the usql interactive shell.
+r"""Backslash command handlers for the usqldb interactive shell.
 
 Each command queries pg_catalog / information_schema through the
 USQLEngine, proving the catalog layer works and producing
@@ -44,8 +44,8 @@ import tempfile
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from usql.cli.formatter import Formatter
-    from usql.core.engine import USQLEngine
+    from usqldb.cli.formatter import Formatter
+    from usqldb.core.engine import USQLEngine
 
 
 class CommandHandler:

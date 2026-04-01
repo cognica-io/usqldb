@@ -1,5 +1,5 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from usql.pg_compat.oid import (
+from usqldb.pg_compat.oid import (
     AM_BTREE,
     AM_HASH,
     AM_HEAP,
@@ -2101,7 +2101,7 @@ class PGCatalogProvider:
                 "leader_pid": None,
                 "usesysid": ROLE_OID,
                 "usename": _OWNER,
-                "application_name": "usql",
+                "application_name": "usqldb",
                 "client_addr": None,
                 "client_hostname": None,
                 "client_port": -1,

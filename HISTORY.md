@@ -23,4 +23,4 @@ Initial release.
 - Backslash commands: `\d`, `\dt`, `\di`, `\dv`, `\ds`, `\df`, `\dn`, `\du`, `\l`, `\det`, `\des`, `\dew`, `\dG`, `\x`, `\timing`, `\o`, `\i`, `\e`, `\conninfo`, `\encoding`, `\!`, `\?`, `\q`.
 - psql-compatible output formatter with aligned and expanded (`\x`) display modes.
 - Query timing (`\timing`), output redirection (`\o`), file execution (`\i`), and editor integration (`\e`).
-- CLI entry point: `usql [--db PATH] [-c COMMAND] [script.sql ...]`.
+- CLI entry point: `usqldb [--db PATH] [-c COMMAND] [script.sql ...]`.

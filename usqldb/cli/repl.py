@@ -1,17 +1,17 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
 
-r"""usql -- interactive SQL shell with PostgreSQL 17-compatible catalogs.
+r"""usqldb -- interactive SQL shell with PostgreSQL 17-compatible catalogs.
 
 Usage:
-    usql                        Start with an in-memory database
-    usql --db mydata.db         Start with persistent SQLite storage
-    usql script.sql             Execute a SQL script then enter REPL
-    usql --db mydata.db s.sql   Persistent + script
-    usql -c "SELECT 1"          Execute a command string and exit
+    usqldb                        Start with an in-memory database
+    usqldb --db mydata.db         Start with persistent SQLite storage
+    usqldb script.sql             Execute a SQL script then enter REPL
+    usqldb --db mydata.db s.sql   Persistent + script
+    usqldb -c "SELECT 1"          Execute a command string and exit
 
 Special commands (backslash):
     \d [NAME]       Describe table/view or list all relations
@@ -40,11 +40,11 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 from pygments.lexers.sql import SqlLexer
 
-import usql
-from usql.cli.commands import CommandHandler
-from usql.cli.completer import USQLCompleter
-from usql.cli.formatter import Formatter
-from usql.core.engine import USQLEngine
+import usqldb
+from usqldb.cli.commands import CommandHandler
+from usqldb.cli.completer import USQLCompleter
+from usqldb.cli.formatter import Formatter
+from usqldb.core.engine import USQLEngine
 
 _STYLE = Style.from_dict(
     {
@@ -196,7 +196,7 @@ class USQLShell:
 
     @staticmethod
     def _history_path() -> str:
-        history_dir = Path(os.path.expanduser("~/.cognica/usql"))
+        history_dir = Path(os.path.expanduser("~/.cognica/usqldb"))
         history_dir.mkdir(parents=True, exist_ok=True)
         return str(history_dir / ".usql_history")
 
@@ -234,11 +234,11 @@ class USQLShell:
         if self._commands.output_file:
             parts.append(f"output: {self._commands.output_file}")
         parts.append("\\? for help")
-        return " usql | " + " | ".join(parts) + " "
+        return " usqldb | " + " | ".join(parts) + " "
 
     def _print_banner(self) -> None:
         db = self._db_path or ":memory:"
-        print(f"usql {usql.__version__} (PostgreSQL 17.0 compatible)")
+        print(f"usqldb {usqldb.__version__} (PostgreSQL 17.0 compatible)")
         print(f"Database: {db}")
         print('Type "\\?" for help.')
         print()
@@ -251,7 +251,7 @@ class USQLShell:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="usql -- interactive SQL shell (PostgreSQL 17 compatible)"
+        description="usqldb -- interactive SQL shell (PostgreSQL 17 compatible)"
     )
     parser.add_argument(
         "--db",

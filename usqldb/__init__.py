@@ -1,5 +1,5 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
@@ -13,6 +13,6 @@ PostgreSQL tools (psql, SQLAlchemy, DBeaver, DataGrip, Django, etc.).
 
 __version__ = "0.1.0"
 
-from usql.core.engine import USQLEngine
+from usqldb.core.engine import USQLEngine
 
 __all__ = ["USQLEngine"]

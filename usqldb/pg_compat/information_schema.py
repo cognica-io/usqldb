@@ -1,5 +1,5 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from usql.pg_compat.oid import (
+from usqldb.pg_compat.oid import (
     OIDAllocator,
     canonical_type_name,
     character_maximum_length,

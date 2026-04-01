@@ -1,8 +1,8 @@
-# usql
+# usqldb
 
 PostgreSQL 17-compatible `information_schema` and `pg_catalog` layer for [UQA](https://github.com/cognica-io/uqa).
 
-usql extends the UQA SQL engine with a comprehensive set of PostgreSQL system catalog views so that standard PostgreSQL tools — psql, SQLAlchemy, DBeaver, DataGrip, Django, and others — can introspect the database as if it were a real PostgreSQL 17 instance.
+usqldb extends the UQA SQL engine with a comprehensive set of PostgreSQL system catalog views so that standard PostgreSQL tools — psql, SQLAlchemy, DBeaver, DataGrip, Django, and others — can introspect the database as if it were a real PostgreSQL 17 instance.
 
 ## Features
 
@@ -19,7 +19,7 @@ usql extends the UQA SQL engine with a comprehensive set of PostgreSQL system ca
 ## Installation
 
 ```bash
-pip install usql
+pip install usqldb
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ pip install usql
 ### As a library
 
 ```python
-from usql import USQLEngine
+from usqldb import USQLEngine
 
 engine = USQLEngine()
 engine.sql("CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT)")
@@ -54,16 +54,16 @@ result = engine.sql(
 
 ```bash
 # In-memory database
-usql
+usqldb
 
 # Persistent storage
-usql --db mydata.db
+usqldb --db mydata.db
 
 # Execute a SQL script then enter REPL
-usql script.sql
+usqldb script.sql
 
 # Execute a single command and exit
-usql -c "SELECT 1"
+usqldb -c "SELECT 1"
 ```
 
 ### Backslash Commands
@@ -104,7 +104,7 @@ Input/Output
 ## Project Structure
 
 ```
-usql/
+usqldb/
   __init__.py              Package root, exports USQLEngine
   core/
     engine.py              USQLEngine — drop-in replacement for uqa.Engine
@@ -130,8 +130,8 @@ pip install -e .
 pytest
 
 # Lint and format
-ruff check usql tests
-ruff format usql tests
+ruff check usqldb tests
+ruff format usqldb tests
 
 # Type check
 pyright

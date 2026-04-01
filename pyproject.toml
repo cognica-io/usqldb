@@ -3,10 +3,10 @@ requires = ["setuptools>=69.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["usql*"]
+include = ["usqldb*"]
 
 [project]
-name = "usql"
+name = "usqldb"
 version = "0.1.0"
 description = "PostgreSQL 17-compatible information_schema and pg_catalog layer for UQA"
 license = "AGPL-3.0-only"
@@ -38,7 +38,7 @@ dependencies = [
 ]
 
 [project.scripts]
-usql = "usql.cli:main"
+usqldb = "usqldb.cli:main"
 
 [project.urls]
 Repository = "https://github.com/cognica-io/usqldb"
@@ -57,7 +57,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["usql"]
+known-first-party = ["usqldb"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -70,4 +70,4 @@ pythonpath = ["."]
 [tool.pyright]
 pythonVersion = "3.12"
 typeCheckingMode = "basic"
-include = ["usql"]
+include = ["usqldb"]

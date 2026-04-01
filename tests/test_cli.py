@@ -1,19 +1,19 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
 
-"""Tests for the usql CLI module (formatter, commands, REPL)."""
+"""Tests for the usqldb CLI module (formatter, commands, REPL)."""
 
 from __future__ import annotations
 
 import pytest
 
-from usql.cli.commands import CommandHandler
-from usql.cli.formatter import Formatter
-from usql.cli.repl import USQLShell
-from usql.core.engine import USQLEngine
+from usqldb.cli.commands import CommandHandler
+from usqldb.cli.formatter import Formatter
+from usqldb.cli.repl import USQLShell
+from usqldb.core.engine import USQLEngine
 
 # ======================================================================
 # Fixtures

@@ -1,10 +1,10 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
 
-"""Output formatting for the usql interactive shell.
+"""Output formatting for the usqldb interactive shell.
 
 Produces psql-compatible tabular and expanded output.
 """

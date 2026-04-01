@@ -1,5 +1,5 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
@@ -18,7 +18,7 @@ from typing import Any
 
 from uqa.engine import Engine
 
-from usql.core.compiler import USQLCompiler
+from usqldb.core.compiler import USQLCompiler
 
 
 class USQLEngine(Engine):
@@ -30,7 +30,7 @@ class USQLEngine(Engine):
 
     Usage::
 
-        from usql import USQLEngine
+        from usqldb import USQLEngine
 
         engine = USQLEngine()
         engine.sql("CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT)")

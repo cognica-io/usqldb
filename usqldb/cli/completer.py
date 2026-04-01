@@ -1,10 +1,10 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
 
-"""Context-aware SQL completer for the usql interactive shell.
+"""Context-aware SQL completer for the usqldb interactive shell.
 
 Provides tab-completion for SQL keywords, table/view/column names,
 schema-qualified names, and backslash commands.
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     from prompt_toolkit.document import Document
 
-    from usql.core.engine import USQLEngine
+    from usqldb.core.engine import USQLEngine
 
 # SQL keywords (uppercase) -- covers DDL, DML, DQL, and UQA extensions
 _SQL_KEYWORDS: list[str] = [

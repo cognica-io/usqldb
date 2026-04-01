@@ -1,5 +1,5 @@
 #
-# usql -- PostgreSQL 17-compatible catalog layer for UQA
+# usqldb -- PostgreSQL 17-compatible catalog layer for UQA
 #
 # Copyright (c) 2023-2026 Cognica, Inc.
 #
@@ -25,9 +25,9 @@ from typing import TYPE_CHECKING, Any
 
 from uqa.sql.compiler import SQLCompiler, SQLResult
 
-from usql.pg_compat.information_schema import InformationSchemaProvider
-from usql.pg_compat.oid import OIDAllocator
-from usql.pg_compat.pg_catalog import PGCatalogProvider
+from usqldb.pg_compat.information_schema import InformationSchemaProvider
+from usqldb.pg_compat.oid import OIDAllocator
+from usqldb.pg_compat.pg_catalog import PGCatalogProvider
 
 if TYPE_CHECKING:
     from uqa.sql.table import Table
