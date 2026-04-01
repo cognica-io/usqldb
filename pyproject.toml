@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["usql*"]
+
+[project]
+name = "usql"
+version = "0.1.0"
+description = "PostgreSQL 17-compatible information_schema and pg_catalog layer for UQA"
+license = "AGPL-3.0-only"
+requires-python = ">=3.12"
+authors = [
+    { name = "Jaepil Jeong", email = "jaepil@cognica.io" },
+]
+keywords = [
+    "postgresql",
+    "information-schema",
+    "pg-catalog",
+    "uqa",
+    "sql",
+    "compatibility",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Database :: Database Engines/Servers",
+    "Typing :: Typed",
+]
+dependencies = [
+    "uqa>=0.21.0",
+]
+
+[project.scripts]
+usql = "usql.cli:main"
+
+[project.urls]
+Repository = "https://github.com/cognica-io/usql"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W", "I", "UP", "B", "SIM", "TCH", "RUF", "PIE", "C4",
+]
+ignore = [
+    "E501", "E741", "UP007", "SIM108", "SIM105", "SIM114", "SIM116",
+    "B008", "B905", "RUF012",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["usql"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+include = ["usql"]
