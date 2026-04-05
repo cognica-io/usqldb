@@ -11,7 +11,7 @@ PostgreSQL system catalog views, enabling compatibility with standard
 PostgreSQL tools (psql, SQLAlchemy, DBeaver, DataGrip, Django, etc.).
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from usqldb.core.engine import USQLEngine
 
