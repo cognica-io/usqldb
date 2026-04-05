@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "usqldb: PostgreSQL 17-compatible catalog layer for UQA"
+title: "usqldb: PostgreSQL 17-compatible layer for UQA --- system catalogs, CLI, and wire protocol server"
 message: "If you use this software, please cite it as below."
 type: software
 authors:
@@ -9,15 +9,19 @@ authors:
     affiliation: "Cognica, Inc."
 repository-code: "https://github.com/cognica-io/usqldb"
 license: AGPL-3.0-only
-version: 0.1.0
-date-released: "2026-04-01"
+version: 0.2.0
+date-released: "2026-04-05"
 abstract: >-
-  PostgreSQL 17-compatible information_schema and pg_catalog layer for UQA,
-  enabling standard PostgreSQL tools to introspect UQA databases.
+  PostgreSQL 17-compatible layer for UQA providing system catalogs,
+  a psql-style CLI, and a wire protocol server with query cancellation,
+  enabling standard PostgreSQL clients to connect to and introspect
+  UQA databases.
 keywords:
   - postgresql
   - information-schema
   - pg-catalog
+  - pgwire
+  - wire-protocol
   - uqa
   - sql
   - compatibility

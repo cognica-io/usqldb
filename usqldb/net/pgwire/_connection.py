@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import struct
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 from usqldb.net.pgwire._auth import (
@@ -37,6 +38,7 @@ from usqldb.net.pgwire._errors import (
     InFailedSQLTransaction,
     PGWireError,
     ProtocolViolation,
+    QueryCanceled,
 )
 from usqldb.net.pgwire._messages import (
     Bind,
@@ -60,6 +62,11 @@ from usqldb.net.pgwire._messages import (
 )
 from usqldb.net.pgwire._query_executor import QueryExecutor, QueryResult
 from usqldb.net.pgwire._type_codec import TypeCodec
+from usqldb.pg_compat.connection_registry import (
+    ConnectionInfo,
+    register as _registry_register,
+    unregister as _registry_unregister,
+)
 
 if TYPE_CHECKING:
     from usqldb.core.engine import USQLEngine
@@ -161,6 +168,15 @@ class PGWireConnection:
         self._closed = False
         self._canceled = False
 
+        self._backend_start: datetime | None = None
+        self._query_start: datetime | None = None
+        self._state_change: datetime | None = None
+        self._current_query: str = ""
+        self._state: str = "idle"
+        self._client_addr: str | None = None
+        self._client_port: int = -1
+        self._application_name: str = ""
+
     @property
     def process_id(self) -> int:
         return self._process_id
@@ -172,6 +188,7 @@ class PGWireConnection:
     def cancel(self) -> None:
         """Mark this connection's current query as canceled."""
         self._canceled = True
+        self._engine.cancel()
 
     # ==================================================================
     # Main lifecycle
@@ -180,12 +197,19 @@ class PGWireConnection:
     async def run(self) -> None:
         """Drive the connection from startup to termination."""
         try:
+            self._backend_start = datetime.now(timezone.utc)
+            peername = self._writer.get_extra_info("peername")
+            if peername is not None:
+                self._client_addr = peername[0]
+                self._client_port = peername[1]
+
             startup = await self._handle_startup()
             if startup is None:
                 return  # SSL/Cancel handled, connection closed.
 
             await self._authenticate(startup)
             await self._send_startup_parameters(startup)
+            self._register_connection()
             await self._main_loop()
         except asyncio.IncompleteReadError:
             logger.debug("Client disconnected (pid=%d)", self._process_id)
@@ -265,6 +289,7 @@ class PGWireConnection:
         """Run the authentication handshake."""
         self._username = startup.parameters.get("user", "")
         self._database = startup.parameters.get("database", self._username)
+        self._application_name = startup.parameters.get("application_name", "")
 
         auth = create_authenticator(
             self._auth_method, self._username, self._credentials
@@ -395,6 +420,14 @@ class PGWireConnection:
             if not stmt:
                 continue
 
+            if self._canceled:
+                self._canceled = False
+                await self._send_error(
+                    QueryCanceled("canceling statement due to user request")
+                )
+                self._update_state("idle", "")
+                break
+
             if self._tx_status == TX_FAILED:
                 # In a failed transaction, reject all commands except
                 # ROLLBACK / COMMIT.
@@ -409,9 +442,29 @@ class PGWireConnection:
                     )
                     continue
 
+            self._update_state("active", stmt)
+
             try:
                 result = await self._executor.execute(stmt)
+
+                if self._canceled:
+                    self._canceled = False
+                    await self._send_error(
+                        QueryCanceled(
+                            "canceling statement due to user request"
+                        )
+                    )
+                    self._update_state("idle", "")
+                    break
+
                 await self._send_query_result(result)
+            except QueryCanceled as exc:
+                self._canceled = False
+                await self._send_error(exc)
+                self._update_state("idle", "")
+                if self._tx_status == TX_IN_TRANSACTION:
+                    self._tx_status = TX_FAILED
+                break
             except PGWireError as exc:
                 await self._send_error(exc)
                 if self._tx_status == TX_IN_TRANSACTION:
@@ -420,11 +473,18 @@ class PGWireConnection:
             except Exception as exc:
                 from usqldb.net.pgwire._errors import map_engine_exception
 
-                await self._send_error(map_engine_exception(exc))
+                mapped = map_engine_exception(exc)
+                await self._send_error(mapped)
                 if self._tx_status == TX_IN_TRANSACTION:
                     self._tx_status = TX_FAILED
                 break
 
+        self._update_state(
+            "idle in transaction"
+            if self._tx_status == TX_IN_TRANSACTION
+            else "idle",
+            "",
+        )
         await self._send_ready_for_query()
 
     async def _send_query_result(self, result: QueryResult) -> None:
@@ -607,6 +667,8 @@ class PGWireConnection:
                     "commands ignored until end of transaction block"
                 )
 
+            self._update_state("active", portal.statement.query)
+
             # Execute if not cached.
             if portal.result_cache is None:
                 result = await self._executor.execute(
@@ -614,6 +676,13 @@ class PGWireConnection:
                     portal.param_values or None,
                 )
                 portal.result_cache = result
+
+            if self._canceled:
+                self._canceled = False
+                self._update_state("idle", "")
+                raise QueryCanceled(
+                    "canceling statement due to user request"
+                )
 
             result = portal.result_cache
 
@@ -656,6 +725,19 @@ class PGWireConnection:
                     MessageCodec.encode_command_complete(result.command_tag)
                 )
 
+            self._update_state(
+                "idle in transaction"
+                if self._tx_status == TX_IN_TRANSACTION
+                else "idle",
+                "",
+            )
+
+        except QueryCanceled as exc:
+            self._canceled = False
+            await self._send_error(exc)
+            self._update_state("idle", "")
+            if self._tx_status == TX_IN_TRANSACTION:
+                self._tx_status = TX_FAILED
         except PGWireError as exc:
             await self._send_error(exc)
             if self._tx_status == TX_IN_TRANSACTION:
@@ -740,9 +822,44 @@ class PGWireConnection:
             result.append(col._replace(format_code=fmt))
         return result
 
+    def _update_state(self, state: str, query: str) -> None:
+        """Update connection state and sync to the registry."""
+        now = datetime.now(timezone.utc)
+        self._state = state
+        self._current_query = query
+        self._state_change = now
+        if state == "active":
+            self._query_start = now
+        self._sync_registry()
+
+    def _register_connection(self) -> None:
+        """Register this connection in the global registry."""
+        self._sync_registry()
+
+    def _sync_registry(self) -> None:
+        """Push current state to the connection registry."""
+        _registry_register(
+            ConnectionInfo(
+                pid=self._process_id,
+                username=self._username,
+                database=self._database,
+                application_name=self._application_name,
+                client_addr=self._client_addr,
+                client_port=self._client_port,
+                backend_start=self._backend_start,
+                xact_start=None,
+                query_start=self._query_start,
+                state_change=self._state_change,
+                state=self._state,
+                query=self._current_query,
+                backend_type="client backend",
+            )
+        )
+
     def _close(self) -> None:
         """Clean up connection resources."""
         self._closed = True
+        _registry_unregister(self._process_id)
         try:
             if not self._writer.is_closing():
                 self._writer.close()

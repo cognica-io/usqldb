@@ -2091,34 +2091,68 @@ class PGCatalogProvider:
             "query",
             "backend_type",
         ]
-        import os
 
-        rows = [
-            {
-                "datid": DATABASE_OID,
-                "datname": _CATALOG_NAME,
-                "pid": os.getpid(),
-                "leader_pid": None,
-                "usesysid": ROLE_OID,
-                "usename": _OWNER,
-                "application_name": "usqldb",
-                "client_addr": None,
-                "client_hostname": None,
-                "client_port": -1,
-                "backend_start": None,
-                "xact_start": None,
-                "query_start": None,
-                "state_change": None,
-                "wait_event_type": None,
-                "wait_event": None,
-                "state": "active",
-                "backend_xid": None,
-                "backend_xmin": None,
-                "query_id": None,
-                "query": "",
-                "backend_type": "client backend",
-            }
-        ]
+        from usqldb.pg_compat.connection_registry import get_all
+
+        connections = get_all()
+        if connections:
+            rows = []
+            for info in connections:
+                rows.append(
+                    {
+                        "datid": DATABASE_OID,
+                        "datname": info.database or _CATALOG_NAME,
+                        "pid": info.pid,
+                        "leader_pid": None,
+                        "usesysid": ROLE_OID,
+                        "usename": info.username or _OWNER,
+                        "application_name": info.application_name,
+                        "client_addr": info.client_addr,
+                        "client_hostname": None,
+                        "client_port": info.client_port,
+                        "backend_start": info.backend_start,
+                        "xact_start": info.xact_start,
+                        "query_start": info.query_start,
+                        "state_change": info.state_change,
+                        "wait_event_type": None,
+                        "wait_event": None,
+                        "state": info.state,
+                        "backend_xid": None,
+                        "backend_xmin": None,
+                        "query_id": None,
+                        "query": info.query,
+                        "backend_type": info.backend_type,
+                    }
+                )
+        else:
+            import os
+
+            rows = [
+                {
+                    "datid": DATABASE_OID,
+                    "datname": _CATALOG_NAME,
+                    "pid": os.getpid(),
+                    "leader_pid": None,
+                    "usesysid": ROLE_OID,
+                    "usename": _OWNER,
+                    "application_name": "usqldb",
+                    "client_addr": None,
+                    "client_hostname": None,
+                    "client_port": -1,
+                    "backend_start": None,
+                    "xact_start": None,
+                    "query_start": None,
+                    "state_change": None,
+                    "wait_event_type": None,
+                    "wait_event": None,
+                    "state": "active",
+                    "backend_xid": None,
+                    "backend_xmin": None,
+                    "query_id": None,
+                    "query": "",
+                    "backend_type": "client backend",
+                }
+            ]
         return columns, rows
 
     # ==================================================================

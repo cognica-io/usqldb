@@ -45,15 +45,17 @@ class ServerFixture:
             await self.server.start()
             self.port = self.server.port
             self._started.set()
-            # Run until loop is stopped.
-            while True:
-                await asyncio.sleep(0.1)
+            # Block until the task is cancelled by stop().
+            await asyncio.Event().wait()
 
+        self._main_task = self._loop.create_task(_start_and_signal())
         try:
-            self._loop.run_until_complete(_start_and_signal())
+            self._loop.run_until_complete(self._main_task)
         except asyncio.CancelledError:
             pass
         finally:
+            # Drain remaining callbacks before closing.
+            self._loop.run_until_complete(self._loop.shutdown_asyncgens())
             self._loop.close()
 
     def stop(self) -> None:
@@ -69,8 +71,8 @@ class ServerFixture:
             except Exception:
                 pass
 
-        if self._loop:
-            self._loop.call_soon_threadsafe(self._loop.stop)
+        if self._loop and hasattr(self, "_main_task"):
+            self._loop.call_soon_threadsafe(self._main_task.cancel)
         if self._thread:
             self._thread.join(timeout=5)
 

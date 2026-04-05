@@ -54,5 +54,6 @@ class USQLEngine(Engine):
 
     def sql(self, query: str, params: list[Any] | None = None) -> Any:
         """Execute a SQL query with PostgreSQL 17-compatible catalogs."""
+        self._cancel_token.reset()
         compiler = USQLCompiler(self)
         return compiler.execute(query, params=params)

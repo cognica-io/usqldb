@@ -6,15 +6,16 @@ usqldb extends the UQA SQL engine with a comprehensive set of PostgreSQL system 
 
 ## Features
 
+- **PostgreSQL wire protocol server** — full v3 protocol with simple and extended query support, 4 authentication methods (trust, password, MD5, SCRAM-SHA-256), SSL/TLS, and query cancellation via `CancelRequest`.
 - **23 information_schema views** — schemata, tables, columns, constraints, views, sequences, routines, foreign tables, triggers, and more.
-- **34 pg_catalog tables** — pg_class, pg_attribute, pg_type, pg_constraint, pg_index, pg_proc, pg_settings, statistics views, and more, with consistent OID cross-references across all of them.
+- **34 pg_catalog tables** — pg_class, pg_attribute, pg_type, pg_constraint, pg_index, pg_proc, pg_settings, pg_stat_activity (live connection data), and more, with consistent OID cross-references across all of them.
 - **Interactive SQL shell** — psql-style REPL with syntax highlighting, tab-completion, backslash commands, expanded display, query timing, and multi-line editing.
 - **Drop-in engine** — `USQLEngine` is a drop-in replacement for `uqa.Engine`. Import it, and every query gets full catalog support.
 
 ## Requirements
 
 - Python 3.12+
-- UQA >= 0.21.0
+- UQA >= 0.25.2
 
 ## Installation
 
@@ -66,6 +67,39 @@ usqldb script.sql
 usqldb -c "SELECT 1"
 ```
 
+### As a wire protocol server
+
+```bash
+# Start with default settings (in-memory, port 5432, trust auth)
+usqldb-server
+
+# Persistent storage on a custom port
+usqldb-server --port 15432 --db mydata.db
+
+# With SCRAM-SHA-256 authentication
+usqldb-server --auth scram-sha-256 --user admin:secret
+
+# With SSL/TLS
+usqldb-server --ssl-cert server.crt --ssl-key server.key
+```
+
+Programmatic usage:
+
+```python
+import asyncio
+from usqldb.net.pgwire import PGWireServer, PGWireConfig
+
+config = PGWireConfig(host="0.0.0.0", port=5432, db_path="my.db")
+server = PGWireServer(config)
+asyncio.run(server.serve_forever())
+```
+
+Once running, connect with any PostgreSQL client:
+
+```bash
+psql -h 127.0.0.1 -p 5432
+```
+
 ### Backslash Commands
 
 ```
@@ -107,12 +141,28 @@ Input/Output
 usqldb/
   __init__.py              Package root, exports USQLEngine
   core/
-    engine.py              USQLEngine — drop-in replacement for uqa.Engine
+    engine.py              USQLEngine --- drop-in replacement for uqa.Engine
     compiler.py            Extended SQL compiler with catalog support
   pg_compat/
     oid.py                 OID allocation and PostgreSQL type mapping
     information_schema.py  23 information_schema view builders
     pg_catalog.py          34 pg_catalog table builders
+    connection_registry.py Thread-safe registry for active pgwire sessions
+  net/
+    pgwire/
+      __init__.py          Public API: PGWireServer, PGWireConfig, AuthMethod
+      server.py            CLI entry point (usqldb-server)
+      _server.py           Asyncio TCP listener and connection lifecycle
+      _connection.py       Per-connection protocol handler
+      _query_executor.py   Query execution and result encoding
+      _auth.py             Authentication (trust, password, MD5, SCRAM-SHA-256)
+      _codec.py            Wire format encoding/decoding
+      _type_codec.py       PostgreSQL type OID mapping for result columns
+      _messages.py         Protocol message constants
+      _buffer.py           Read/write buffer utilities
+      _config.py           PGWireConfig dataclass
+      _constants.py        Protocol version and error codes
+      _errors.py           Wire protocol error types
   cli/
     repl.py                Interactive REPL with prompt_toolkit
     commands.py            Backslash command handlers

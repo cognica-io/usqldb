@@ -1,5 +1,41 @@
 # History
 
+## 0.2.0 (2026-04-05)
+
+PostgreSQL wire protocol server, live connection monitoring, and query cancellation. All 260 tests pass.
+
+### Wire Protocol Server
+
+- **`usqldb.net.pgwire`** --- full PostgreSQL v3 wire protocol server supporting simple and extended query protocols.
+- **4 authentication methods**: trust, cleartext password, MD5, and SCRAM-SHA-256.
+- **SSL/TLS support**: optional TLS encryption via `--ssl-cert` / `--ssl-key`.
+- **CLI entry point**: `usqldb-server [--host HOST] [--port PORT] [--db PATH] [--auth METHOD] [--user NAME:PASSWORD]`.
+- **Programmatic API**: `PGWireServer(PGWireConfig(...))` with `asyncio.run(server.serve_forever())`.
+
+### Live pg_stat_activity
+
+- **`pg_stat_activity`** now shows real pgwire connections: pid, username, database, client address, query state, and current query text, populated from the connection registry.
+
+### Query Cancellation
+
+- **CancelRequest support**: pgwire `CancelRequest` messages cancel in-flight queries through UQA's `CancellationToken`, checked in operator hot loops.
+
+### Connection Registry
+
+- **`usqldb.pg_compat.connection_registry`**: Thread-safe registry tracking active pgwire sessions, used by `pg_stat_activity` and cancel-request routing.
+
+### Catalog Improvements
+
+- **Unqualified catalog name resolution**: `pg_catalog` and `information_schema` table names resolve without schema qualification (e.g., `SELECT * FROM pg_class` works alongside `SELECT * FROM pg_catalog.pg_class`).
+
+### Bug Fixes
+
+- Fixed asyncio deprecation warnings in tests.
+
+### Tests
+
+- **Total**: 260 tests.
+
 ## 0.1.0 (2026-04-01)
 
 Initial release.

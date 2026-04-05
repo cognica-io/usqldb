@@ -23,6 +23,7 @@ from pglast import parse_sql, split
 
 from usqldb.net.pgwire._constants import FORMAT_TEXT
 from usqldb.net.pgwire._errors import (
+    QueryCanceled,
     map_engine_exception,
 )
 from usqldb.net.pgwire._messages import ColumnDescription
@@ -150,6 +151,10 @@ class QueryExecutor:
         try:
             result = await loop.run_in_executor(None, self._engine.sql, query, params)
         except Exception as exc:
+            from uqa.cancel import QueryCancelled
+
+            if isinstance(exc, QueryCancelled):
+                raise QueryCanceled(str(exc)) from exc
             raise map_engine_exception(exc) from exc
 
         return self._build_result(query, result)
@@ -167,6 +172,10 @@ class QueryExecutor:
         try:
             result = self._engine.sql(query, params)
         except Exception as exc:
+            from uqa.cancel import QueryCancelled
+
+            if isinstance(exc, QueryCancelled):
+                raise QueryCanceled(str(exc)) from exc
             raise map_engine_exception(exc) from exc
 
         return self._build_result(query, result)

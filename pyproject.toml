@@ -7,8 +7,8 @@ include = ["usqldb*"]
 
 [project]
 name = "usqldb"
-version = "0.1.0"
-description = "PostgreSQL 17-compatible information_schema and pg_catalog layer for UQA"
+version = "0.2.0"
+description = "PostgreSQL 17-compatible layer for UQA --- system catalogs, psql-style CLI, and wire protocol server"
 license = "AGPL-3.0-only"
 requires-python = ">=3.12"
 authors = [
@@ -18,6 +18,9 @@ keywords = [
     "postgresql",
     "information-schema",
     "pg-catalog",
+    "pgwire",
+    "wire-protocol",
+    "psql",
     "uqa",
     "sql",
     "compatibility",
@@ -34,7 +37,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "uqa>=0.21.0",
+    "uqa>=0.25.2",
 ]
 
 [project.scripts]
