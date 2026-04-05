@@ -110,9 +110,7 @@ class TestScramSHA256Auth:
             client_first_bare = f"n=alice,r={client_nonce}"
             client_first_msg = f"n,,{client_first_bare}"
 
-            response, done = await auth.step(
-                client_first_msg.encode("utf-8")
-            )
+            response, done = await auth.step(client_first_msg.encode("utf-8"))
             assert done is False
 
             # Parse server-first-message from the SASL continue response.
@@ -149,26 +147,19 @@ class TestScramSHA256Auth:
             ).digest()
 
             channel_binding = base64.b64encode(b"n,,").decode("ascii")
-            client_final_without_proof = (
-                f"c={channel_binding},r={combined_nonce}"
-            )
+            client_final_without_proof = f"c={channel_binding},r={combined_nonce}"
             auth_message = (
-                f"{client_first_bare},{server_first},"
-                f"{client_final_without_proof}"
+                f"{client_first_bare},{server_first},{client_final_without_proof}"
             )
             client_signature = hmac_mod.new(
                 stored_key, auth_message.encode("utf-8"), hashlib.sha256
             ).digest()
-            client_proof = bytes(
-                a ^ b for a, b in zip(client_key, client_signature)
-            )
+            client_proof = bytes(a ^ b for a, b in zip(client_key, client_signature))
             proof_b64 = base64.b64encode(client_proof).decode("ascii")
 
             client_final = f"{client_final_without_proof},p={proof_b64}"
 
-            response, done = await auth.step(
-                client_final.encode("utf-8")
-            )
+            response, done = await auth.step(client_final.encode("utf-8"))
             assert done is True
 
             # Verify server signature.

@@ -16,7 +16,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import struct
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from usqldb.net.pgwire._auth import (
@@ -64,7 +64,11 @@ from usqldb.net.pgwire._query_executor import QueryExecutor, QueryResult
 from usqldb.net.pgwire._type_codec import TypeCodec
 from usqldb.pg_compat.connection_registry import (
     ConnectionInfo,
+)
+from usqldb.pg_compat.connection_registry import (
     register as _registry_register,
+)
+from usqldb.pg_compat.connection_registry import (
     unregister as _registry_unregister,
 )
 
@@ -197,7 +201,7 @@ class PGWireConnection:
     async def run(self) -> None:
         """Drive the connection from startup to termination."""
         try:
-            self._backend_start = datetime.now(timezone.utc)
+            self._backend_start = datetime.now(UTC)
             peername = self._writer.get_extra_info("peername")
             if peername is not None:
                 self._client_addr = peername[0]
@@ -450,9 +454,7 @@ class PGWireConnection:
                 if self._canceled:
                     self._canceled = False
                     await self._send_error(
-                        QueryCanceled(
-                            "canceling statement due to user request"
-                        )
+                        QueryCanceled("canceling statement due to user request")
                     )
                     self._update_state("idle", "")
                     break
@@ -480,9 +482,7 @@ class PGWireConnection:
                 break
 
         self._update_state(
-            "idle in transaction"
-            if self._tx_status == TX_IN_TRANSACTION
-            else "idle",
+            "idle in transaction" if self._tx_status == TX_IN_TRANSACTION else "idle",
             "",
         )
         await self._send_ready_for_query()
@@ -680,9 +680,7 @@ class PGWireConnection:
             if self._canceled:
                 self._canceled = False
                 self._update_state("idle", "")
-                raise QueryCanceled(
-                    "canceling statement due to user request"
-                )
+                raise QueryCanceled("canceling statement due to user request")
 
             result = portal.result_cache
 
@@ -824,7 +822,7 @@ class PGWireConnection:
 
     def _update_state(self, state: str, query: str) -> None:
         """Update connection state and sync to the registry."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         self._state = state
         self._current_query = query
         self._state_change = now
